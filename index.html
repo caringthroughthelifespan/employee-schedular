@@ -3,10 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
+    <title>Employee & Client Schedules</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@3.9.0/dist/fullcalendar.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Basic styles for the page and tabs */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* Style the tabs container */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        .tab:hover {
+            background-color: #ddd;
+        }
+
+        .active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Hide the content by default */
+        .content {
+            display: none;
+        }
+
+        /* Show content of the active tab */
+        .content.active {
+            display: block;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to My Website</h1>
-    <p>This is a test page.</p>
+    <h1>Employee & Client Schedules</h1>
+
+    <!-- Tabs for different sections -->
+    <div class="tabs">
+        <div class="tab" id="employee-tab">Employee Schedules</div>
+        <div class="tab" id="client-tab">Client Schedules</div>
+        <div class="tab" id="create-modify-tab">Create/Modify Schedules</div>
+    </div>
+
+    <!-- Content for each tab -->
+    <div id="employee-content" class="content">
+        <h2>Employee Schedules</h2>
+        <p>Here you can view employee schedules.</p>
+        <!-- Insert employee schedule content here -->
+    </div>
+
+    <div id="client-content" class="content">
+        <h2>Client Schedules</h2>
+        <p>Here you can view client schedules.</p>
+        <!-- Insert client schedule content here -->
+    </div>
+
+    <div id="create-modify-content" class="content">
+        <h2>Create/Modify Schedules</h2>
+        <p>Here you can create or modify employee schedules.</p>
+        <!-- Insert schedule creation/modification tools here -->
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
