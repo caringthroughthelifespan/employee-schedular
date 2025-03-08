@@ -106,34 +106,48 @@ document.addEventListener("DOMContentLoaded", function() {
                 document.getElementById("file-status").innerText = "Error processing staff availability file.";
             });
     }
+function processFile(file, fileType) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
 
-    function processFile(file, fileType) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-
-            reader.onload = function(event) {
-                const fileContent = event.target.result;
-
-                if (fileType === "client-request") {
-                    parseCSV(fileContent).then(resolve).catch(reject);
-                } else if (fileType === "staff-availability") {
-                    parseCSV(fileContent).then(resolve).catch(reject);
-                }
-            };
-
-            reader.onerror = function() {
-                reject(new Error("Error reading file"));
-            };
+        reader.onload = function(event) {
+            const fileContent = event.target.result;
 
             if (file.name.endsWith(".csv")) {
-                reader.readAsText(file);
+                parseCSV(fileContent).then(resolve).catch(reject);
             } else if (file.name.endsWith(".xlsx")) {
-                reader.readAsArrayBuffer(file);
+                parseXLSX(fileContent).then(resolve).catch(reject);
             } else {
                 reject(new Error("Unsupported file format"));
             }
-        });
-    }
+        };
+
+        reader.onerror = function() {
+            reject(new Error("Error reading file"));
+        };
+
+        if (file.name.endsWith(".csv")) {
+            reader.readAsText(file);
+        } else if (file.name.endsWith(".xlsx")) {
+            reader.readAsBinaryString(file);
+        }
+    });
+}
+
+// Function to parse XLSX files
+function parseXLSX(binaryString) {
+    return new Promise((resolve, reject) => {
+        try {
+            const workbook = XLSX.read(binaryString, { type: "binary" });
+            const sheetName = workbook.SheetNames[0]; // Get first sheet
+            const sheet = workbook.Sheets[sheetName];
+            const parsedData = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Convert to array
+            resolve(parsedData);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
 
     function parseCSV(fileContent) {
         return new Promise((resolve, reject) => {
