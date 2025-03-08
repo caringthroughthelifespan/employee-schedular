@@ -1,29 +1,29 @@
-// JavaScript for password check and tab switching
 document.addEventListener("DOMContentLoaded", function() {
-    const correctPassword = "PNCS2025!";  // Correct password for accessing the site
+    const correctPassword = "PNCS2025!"; // Correct password
 
-    // Lock screen check on page load
+    // Lock screen logic
     const lockScreen = document.getElementById("lock-screen");
     const contentWrapper = document.getElementById("content-wrapper");
 
-    // Function to check the password
     function checkPassword() {
         const enteredPassword = document.getElementById("password").value;
-
-        // Check if the entered password matches the correct one
         if (enteredPassword === correctPassword) {
-            // Hide the lock screen and show the content
             lockScreen.style.display = "none";
             contentWrapper.style.display = "block";
         } else {
             alert("Incorrect password. Please try again.");
         }
     }
-
-    // Attach password check function to the submit button
     document.querySelector("button").addEventListener("click", checkPassword);
 
     // Tab switching logic
+    function setActiveTab(tab, content) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+        tab.classList.add('active');
+        content.classList.add('active');
+    }
+
     const employeeTab = document.getElementById("employee-tab");
     const clientTab = document.getElementById("client-tab");
     const createModifyTab = document.getElementById("create-modify-tab");
@@ -32,47 +32,61 @@ document.addEventListener("DOMContentLoaded", function() {
     const clientContent = document.getElementById("client-content");
     const createModifyContent = document.getElementById("create-modify-content");
 
-    // Function to set active tab and its content
-    function setActiveTab(tab, content) {
-        // Remove active class from all tabs and content sections
-        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+    employeeTab.addEventListener("click", () => setActiveTab(employeeTab, employeeContent));
+    clientTab.addEventListener("click", () => setActiveTab(clientTab, clientContent));
+    createModifyTab.addEventListener("click", () => setActiveTab(createModifyTab, createModifyContent));
 
-        // Add active class to the clicked tab and its corresponding content
-        tab.classList.add('active');
-        content.classList.add('active');
+    // Calendar logic
+    let currentDate = new Date();
+
+    function generateCalendar(targetElement) {
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(currentDate.getDate() - startOfWeek.getDay()); // Start on Sunday
+
+        let calendarHTML = `<table border="1"><tr>`;
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        days.forEach(day => calendarHTML += `<th>${day}</th>`);
+        calendarHTML += `</tr><tr>`;
+
+        for (let i = 0; i < 7; i++) {
+            let date = new Date(startOfWeek);
+            date.setDate(startOfWeek.getDate() + i);
+            calendarHTML += `<td>${date.toDateString()}</td>`;
+        }
+
+        calendarHTML += `</tr></table>`;
+
+        document.getElementById(targetElement).innerHTML = calendarHTML;
     }
 
-    // Set the initial active tab (Employee Schedules by default)
-    setActiveTab(employeeTab, employeeContent);
-
-    // Add event listeners to the tabs
-    employeeTab.addEventListener("click", function() {
-        setActiveTab(employeeTab, employeeContent);
+    document.getElementById("prev-week").addEventListener("click", function() {
+        currentDate.setDate(currentDate.getDate() - 7);
+        generateCalendar("employee-calendar");
+        generateCalendar("client-calendar");
     });
 
-    clientTab.addEventListener("click", function() {
-        setActiveTab(clientTab, clientContent);
+    document.getElementById("next-week").addEventListener("click", function() {
+        currentDate.setDate(currentDate.getDate() + 7);
+        generateCalendar("employee-calendar");
+        generateCalendar("client-calendar");
     });
 
-    createModifyTab.addEventListener("click", function() {
-        setActiveTab(createModifyTab, createModifyContent);
-    });
+    // Initial calendar display
+    generateCalendar("employee-calendar");
+    generateCalendar("client-calendar");
 
-    // File upload and processing functions
+    // File upload handling
     function handleFileUpload() {
         const clientRequestFile = document.getElementById("client-request").files[0];
         const staffAvailabilityFile = document.getElementById("staff-availability").files[0];
-        
+
         if (!clientRequestFile || !staffAvailabilityFile) {
             alert("Please select both files before uploading.");
             return;
         }
 
-        // Display loading status
         document.getElementById("file-status").innerText = "Uploading files...";
 
-        // Process Client Request File (CSV or XLSX)
         processFile(clientRequestFile, "client-request")
             .then(clientData => {
                 console.log("Client Request Data:", clientData);
@@ -83,7 +97,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 document.getElementById("file-status").innerText = "Error processing client request file.";
             });
 
-        // Process Staff Availability File (CSV or XLSX)
         processFile(staffAvailabilityFile, "staff-availability")
             .then(staffData => {
                 console.log("Staff Availability Data:", staffData);
@@ -94,7 +107,6 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
-    // Function to read and parse CSV or XLSX files
     function processFile(file, fileType) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -103,13 +115,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 const fileContent = event.target.result;
 
                 if (fileType === "client-request") {
-                    parseClientRequest(fileContent)
-                        .then(resolve)
-                        .catch(reject);
+                    parseCSV(fileContent).then(resolve).catch(reject);
                 } else if (fileType === "staff-availability") {
-                    parseStaffAvailability(fileContent)
-                        .then(resolve)
-                        .catch(reject);
+                    parseCSV(fileContent).then(resolve).catch(reject);
                 }
             };
 
@@ -117,7 +125,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 reject(new Error("Error reading file"));
             };
 
-            // Read the file as text (for CSV) or as binary (for XLSX)
             if (file.name.endsWith(".csv")) {
                 reader.readAsText(file);
             } else if (file.name.endsWith(".xlsx")) {
@@ -128,21 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Function to parse CSV files (example simple parsing)
-    function parseClientRequest(fileContent) {
-        return new Promise((resolve, reject) => {
-            try {
-                const rows = fileContent.split("\n");
-                const parsedData = rows.map(row => row.split(","));
-                resolve(parsedData);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // Function to parse Staff Availability files (example simple parsing)
-    function parseStaffAvailability(fileContent) {
+    function parseCSV(fileContent) {
         return new Promise((resolve, reject) => {
             try {
                 const rows = fileContent.split("\n");
